@@ -19,14 +19,64 @@ const { NotImplementedError } = require('../extensions/index.js');
  * reverseMachine.decrypt('AEIHQX SX DLLU!', 'alphonse') => '!NWAD TA KCATTA'
  * 
  */
-class VigenereCipheringMachine {
-  encrypt() {
-    throw new NotImplementedError('Not implemented');
-    // remove line with error and write your code here
+ class VigenereCipheringMachine {
+  constructor(direct = true) {
+    this.direct = direct;
   }
-  decrypt() {
-    throw new NotImplementedError('Not implemented');
-    // remove line with error and write your code here
+
+  encrypt(message, key) {
+    if (!message || !key) throw new Error('Incorrect arguments!');
+    if (typeof key === 'string') key = this.filterKey(key);
+    let output = '';
+    for (let i = 0, j = 0; i < message.length; i++) {
+      const c = message.charCodeAt(i);
+      if (this.isUppercase(c)) {
+        output += String.fromCharCode((c - 65 + key[j % key.length]) % 26 + 65);
+        j++;
+      } else if (this.isLowercase(c)) {
+        output += String.fromCharCode((c - 97 + key[j % key.length]) % 26 + 97);
+        j++;
+      } else {
+        output += message.charAt(i);
+      }
+    }
+    output = output.toUpperCase();
+    return this.direct ? output : this.reverseStr(output);
+  }
+
+  decrypt(message, key) {
+    if (!message || !key) throw new Error('Incorrect arguments!');
+    key = this.filterKey(key);
+    for (let i = 0; i < key.length; i++) {
+      key[i] = (26 - key[i]) % 26;
+    }
+    return this.encrypt(message, key);
+  };
+
+  reverseStr = (str) => {
+    return str.split('').reverse().join('')
+  };
+
+  filterKey= (key) => {
+    const result = [];
+    for (let i = 0; i < key.length; i++) {
+      const c = key.charCodeAt(i);
+      if (this.isLetter(c))
+        result.push((c - 65) % 32);
+    }
+    return result;
+  };
+
+  isLetter = (c) => {
+    return this.isUppercase(c) || this.isLowercase(c);
+  };
+
+  isUppercase = (c) => {
+    return 65 <= c && c <= 90;
+  };
+
+  isLowercase = (c) => {
+    return 97 <= c && c <= 122;
   }
 }
 
